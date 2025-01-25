@@ -2,4 +2,60 @@ services:
   nginx:
     build: ./requirements/nginx
     ports:
-      - 80:80
+      - 443:443
+    env_file: .env
+    volumes:
+      - ./requirements/nginx/logs:/var/log/nginx
+      - ${HOME}/data/wordpress:/var/www/html
+    networks:
+      - front-end
+    depends_on:
+      - wordpress
+    secrets:
+      - ssl_cert
+      - ssl_cert_key
+    restart: on-failure
+
+  wordpress:
+    build: ./requirements/wordpress
+    env_file: .env
+    volumes:
+      - ${HOME}/data/wordpress:/var/www/html
+      - ./requirements/wordpress/logs:/var/log
+    networks:
+      - front-end
+      - back-end
+    depends_on:
+      - mariadb
+    secrets:
+      - wp_credentials
+      - wp_admin_credentials
+      - wpdb_credentials
+    restart: on-failure
+
+  mariadb:
+    build: ./requirements/mariadb
+    env_file: .env
+    volumes:
+      - ${HOME}/data/mariadb:/var/lib/mysql
+    networks:
+      - back-end
+    secrets:
+      - wpdb_credentials
+    restart: on-failure
+
+secrets:
+  ssl_cert:
+    file: ../secrets/ssl_cert.txt
+  ssl_cert_key:
+    file: ../secrets/ssl_cert_key.txt
+  wp_credentials:
+    file: ../secrets/wp_credentials.txt
+  wp_admin_credentials:
+    file: ../secrets/wp_admin_credentials.txt
+  wpdb_credentials:
+    file: ../secrets/wpdb_credentials.txt
+
+networks:
+  front-end:
+  back-end:
