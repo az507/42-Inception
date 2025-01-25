@@ -1,0 +1,12 @@
+[25-Jan-2025 08:25:39] NOTICE: [pool www] 'user' directive is ignored when FPM is not running as root
+[25-Jan-2025 08:25:39] NOTICE: [pool www] 'group' directive is ignored when FPM is not running as root
+[25-Jan-2025 08:25:39] NOTICE: fpm is running, pid 1
+[25-Jan-2025 08:25:39] NOTICE: ready to handle connections
+[25-Jan-2025 08:25:39] NOTICE: systemd monitor interval set to 10000ms
+[25-Jan-2025 08:57:45] NOTICE: Terminating ...
+[25-Jan-2025 08:57:45] NOTICE: exiting, bye-bye!
+[25-Jan-2025 08:57:47] NOTICE: [pool www] 'user' directive is ignored when FPM is not running as root
+[25-Jan-2025 08:57:47] NOTICE: [pool www] 'group' directive is ignored when FPM is not running as root
+[25-Jan-2025 08:57:47] NOTICE: fpm is running, pid 1
+[25-Jan-2025 08:57:47] NOTICE: ready to handle connections
+[25-Jan-2025 08:57:47] NOTICE: systemd monitor interval set to 10000ms
