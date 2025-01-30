@@ -12,7 +12,7 @@ echo "Done pinging!"
 # SET operations will store the cache data, (sets string value of key, creating it if doesn't exist)
 # GET operations retrieve it (gets value of key)
 redis-cli Config Set requirepass $REDIS_AUTH
-exec redis-cli -h $REDIS_IPADDR << EOF > /var/log/redis/cache.log
+exec redis-cli -h $REDIS_IPADDR << EOF
 Auth $REDIS_AUTH
 MONITOR
 EOF

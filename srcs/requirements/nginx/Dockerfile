@@ -14,13 +14,13 @@ FROM debian:11
 
 # Can use make-ssl-cert command from ssl-cert package to create self-signed certs
 RUN apt-get update -y && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
-RUN mkdir /var/lib/nginx/body && touch /run/nginx.pid
+RUN mkdir -p /var/lib/nginx/body /tools && touch /run/nginx.pid /var/log/nginx/access.log /var/log/nginx/error.log
 RUN groupadd -r -g 1000 nginx && useradd -u 1000 -r -g nginx nginx
 COPY conf/nginx.conf /etc/nginx
 COPY conf/server.conf /etc/nginx/conf.d
-RUN chown -R nginx:nginx /var/www/html /etc/nginx /var/lib/nginx /run/nginx.pid
+#VOLUME /home/nginx
+RUN chown -R nginx:nginx /var/www/html /etc/nginx /var/lib/nginx /run/nginx.pid /var/log/nginx
 WORKDIR /var/www/html
-#RUN chmod 757 /var/www/html
 #VOLUME /var/www/html
 USER nginx
 CMD ["nginx", "-g", "daemon off;"]

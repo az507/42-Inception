@@ -5,7 +5,8 @@ services:
       - 443:443
     env_file: .env
     volumes:
-      - ./requirements/nginx/logs:/var/log/nginx
+      #- ./requirements/nginx/logs:/var/log/nginx
+      #- ./requirements/nginx/logs:/home/nginx
       - ${HOME}/data/wordpress:/var/www/html
     networks:
       - front-end
@@ -21,7 +22,7 @@ services:
     env_file: .env
     volumes:
       - ${HOME}/data/wordpress:/var/www/html
-      - ./requirements/wordpress/logs:/var/log
+        #- ./requirements/wordpress/logs:/var/log
     networks:
       - front-end
       - back-end
@@ -49,8 +50,8 @@ services:
   redis:
     build: ./requirements/bonus/redis
     env_file: .env
-    volumes:
-      - ./requirements/bonus/redis/logs:/var/log/redis
+#    volumes:
+#      - ./requirements/bonus/redis/logs:/var/log/redis
     networks:
       - back-end
     secrets:

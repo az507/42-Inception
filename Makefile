@@ -1,7 +1,6 @@
 SHELL		= bash
 COMPOSE		= srcs/docker-compose.yml
 REQ_DIR		= srcs/requirements
-BONUS_DIR	= $(REQ_DIR)/bonus
 VOL_DIR		= ~/data
 DCOMPOSE	= docker compose -f $(COMPOSE)
 
@@ -14,8 +13,7 @@ clean:
 
 fclean:
 	$(DCOMPOSE) down --rmi all
-	rm -rf $(VOL_DIR)/mariadb $(VOL_DIR)/wordpress $(REQ_DIR)/nginx/logs/* $(REQ_DIR)/wordpress/logs/* \
-		$(BONUS_DIR)/redis/logs/* $(BONUS_DIR)/ftp/logs/*
+	rm -rf $(VOL_DIR)/mariadb $(VOL_DIR)/wordpress $(REQ_DIR)/nginx/logs/*
 
 enter:
 	-$(DCOMPOSE) exec -it $(c) $(SHELL)
