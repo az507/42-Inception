@@ -1,8 +1,10 @@
 FROM debian:11
-
 RUN apt-get update -y && apt-get install -y \
 host \
+`#less` \
+`#sendmail <-- Massively slows down wordpress startup time` \
 curl \
+php-pear `# php-pear is for pecl installer, used for downloading PhpRedis extension` \
 #xdg-utils \
 php-curl \
 php-dom \
@@ -13,7 +15,14 @@ php-xml \
 php-zip \
 php-mbstring \
 php7.4-mysqli \
-php7.4-fpm #&& rm -rf /var/lib/apt/lists/*
+php7.4-fpm \
+php-redis `# <-- for downloading PhpRedis extension` \
+php7.4-dev `# <-- This package is to resolve 'phpize' error that shows up when running below 'pecl instal'` \
+&& rm -rf /var/lib/apt/lists/*
+
+#src: https://askubuntu.com/questions/403327/install-pecl-packages-on-ubuntu
+
+RUN pecl install redis # <-- for downloading PhpRedis extension as well
 
 # Without creating this directory the php-fpm process wont be able to create some pid file in /run/php/php7.4-fpm.pid
 RUN cp /usr/sbin/php-fpm7.4 /bin/php-fpm && mkdir /run/php /home/wordpress

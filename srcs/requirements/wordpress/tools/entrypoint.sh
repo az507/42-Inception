@@ -19,7 +19,10 @@ USER_NAME=$(grep "username" /run/secrets/wp_credentials | awk '{print $2}')
 USER_PASS=$(grep "password" /run/secrets/wp_credentials | awk '{print $2}')
 USER_EMAIL=$(grep "email" /run/secrets/wp_credentials | awk '{print $2}')
 
+REDIS_AUTH=$(grep "password" /run/secrets/redis_auth | awk '{print $2}')
+
 NGINX_IPADDR=$(host nginx | awk '{print $4}')
+REDIS_IPADDR=$(host redis | awk '{print $4}')
 HOSTNAME=$COMPOSE_PROJECT_NAME-mariadb-1.$COMPOSE_PROJECT_NAME''_back-end
 
 sed -i 's@database_name_here@'"$DB_NAME"'@' wp-config.php
@@ -33,9 +36,38 @@ wp core install --url=$WEBSITE_URL \
     --admin_password=$ADMIN_PASS \
     --admin_email=$ADMIN_EMAIL
 wp user create $USER_NAME $USER_EMAIL --user_pass=$USER_PASS
-echo "listen.allowed_clients = $NGINX_IPADDR" >> /etc/php/7.4/fpm/pool.d/www.conf
+
+#echo "listen.allowed_clients = $NGINX_IPADDR $REDIS_IPADDR" >> /etc/php/7.4/fpm/pool.d/www.conf
+
+#echo "define( 'WP_CACHE', true );" >> wp-config.php
+#echo "define( 'WP_CACHE_KEY_SALT', 'https://achak.42.fr' );" >> wp-config.php
+
+# Mistake: I didnt put the redis server credentials in between the block that the wp-config.php file explicitly told us to write inside
+# for additional custom values, which resulted in wp-content/object-cache.php error at line 1490: Connection refused
+sed -n '91,$p' wp-config.php > tempfile
+sed -i '91,$d' wp-config.php
+echo '$redis_server'" = array(
+    'host'      => '$REDIS_IPADDR',
+    'port'      => 6379,
+    'auth'      => '$REDIS_AUTH',
+    'database'  => 0,
+);" >> wp-config.php
+cat tempfile >> wp-config.php
+rm tempfile
+
+wp plugin install wp-redis --activate
+cp wp-content/plugins/wp-redis/object-cache.php wp-content/object-cache.php
+#For printing out backtrace that led to php exception
+#sed -i 's/trigger_error( $this->last_triggered_error, E_USER_WARNING );/debug_print_backtrace();\n\t\t\ttrigger_error( $this->last_triggered_error, E_USER_WARNING );/g' wp-content/object-cache.php
 
 # This line below will sometimes help solve the error when hyperlink to https://achak.42.fr/wp-admin/ doesn't work,
 # but entering it in search bar (regardless of line below) usually works
-wp search-replace http https --report-changed-only
+#wp search-replace http https --report-changed-only
+#wp cache flush
+cat << EOF > /var/www/html/abc.php
+<?php
+
+phpinfo();
+EOF
+
 exec php-fpm -F -R

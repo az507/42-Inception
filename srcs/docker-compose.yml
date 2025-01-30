@@ -27,10 +27,12 @@ services:
       - back-end
     depends_on:
       - mariadb
+      - redis
     secrets:
       - wp_credentials
       - wp_admin_credentials
       - wpdb_credentials
+      - redis_auth
     restart: on-failure
 
   mariadb:
@@ -44,6 +46,31 @@ services:
       - wpdb_credentials
     restart: on-failure
 
+  redis:
+    build: ./requirements/bonus/redis
+    env_file: .env
+    volumes:
+      - ./requirements/bonus/redis/logs:/var/log/redis
+    networks:
+      - back-end
+    secrets:
+      - redis_auth
+    restart: on-failure
+
+#  ftp:
+#    build: ./requirements/bonus/ftp
+#    ports:
+#      - "21:21"
+#    env_file: .env
+#    volumes:
+#      - ${HOME}/data/wordpress:/srv/ftp
+#      - ./requirements/bonus/ftp/logs:/var/log
+#    depends_on:
+#      - wordpress
+#    secrets:
+#      - ftp_password
+#    restart: on-failure
+
 secrets:
   ssl_cert:
     file: ../secrets/ssl_cert.txt
@@ -55,6 +82,10 @@ secrets:
     file: ../secrets/wp_admin_credentials.txt
   wpdb_credentials:
     file: ../secrets/wpdb_credentials.txt
+  redis_auth:
+    file: ../secrets/redis_auth.txt
+#  ftp_password:
+#    file: ../secrets/ftp_password.txt
 
 networks:
   front-end:
