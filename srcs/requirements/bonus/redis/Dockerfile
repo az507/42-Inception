@@ -1,6 +1,6 @@
 FROM debian:11
 
-RUN apt-get update && apt-get install -y redis host vim #&& rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y redis host && rm -rf /var/lib/apt/lists/*
 #COPY conf/redis.conf /etc/redis
 WORKDIR /etc/redis
 #VOLUME /var/log/redis

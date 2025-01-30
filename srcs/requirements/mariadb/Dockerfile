@@ -1,7 +1,7 @@
 FROM debian:11
 
 # run apt-get update and install on the same line to ensure latest package versions get downloaded every time
-RUN apt-get update && apt-get install -y mariadb-server iputils-ping && rm -rf /var/lib/apt-get/lists/* # clear the apt-get cache
+RUN apt-get update && apt-get install -y mariadb-server && rm -rf /var/lib/apt-get/lists/* # clear the apt cache which reduces docker image size
 COPY conf/mariadb.cnf /etc/mysql
 
 # -r flag to create systems account, meant for daemons. With systems accounts, access by services can be restricted to files
