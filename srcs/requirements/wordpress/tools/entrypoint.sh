@@ -62,6 +62,8 @@ cp wp-content/plugins/wp-redis/object-cache.php wp-content/object-cache.php
 
 # This line below will sometimes help solve the error when hyperlink to https://achak.42.fr/wp-admin/ doesn't work,
 # but entering it in search bar (regardless of line below) usually works
+# UPDATE: if the below script gets run after the first time, it changes https links to httpss, which will break the hyperlink to dashboard
+# Also, without this line now it works fine
 #wp search-replace http https --report-changed-only
 #wp cache flush
 cat << EOF > /var/www/html/abc.php
