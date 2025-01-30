@@ -1,5 +1,9 @@
 #!/bin/bash
 
+is_first=1
+if test -f /var/www/html/index.php; then
+    is_first=0
+fi
 wp core download --path=/var/www/html
 # Don't use wp config create and wp db create, these commands rely on the mysql binary being on the same host machine
 # as the wp cli, not for remote client access
@@ -42,29 +46,42 @@ wp user create $USER_NAME $USER_EMAIL --user_pass=$USER_PASS
 #echo "define( 'WP_CACHE', true );" >> wp-config.php
 #echo "define( 'WP_CACHE_KEY_SALT', 'https://achak.42.fr' );" >> wp-config.php
 
-# Mistake: I didnt put the redis server credentials in between the block that the wp-config.php file explicitly told us to write inside
-# for additional custom values, which resulted in wp-content/object-cache.php error at line 1490: Connection refused
-sed -n '91,$p' wp-config.php > tempfile
-sed -i '91,$d' wp-config.php
-echo '$redis_server'" = array(
-    'host'      => '$REDIS_IPADDR',
-    'port'      => 6379,
-    'auth'      => '$REDIS_AUTH',
-    'database'  => 0,
-);" >> wp-config.php
-cat tempfile >> wp-config.php
-rm tempfile
+if ! grep "$REDIS_IPADDR" wp-config.php; then
+    # Mistake: I didnt put the redis server credentials in between the block that the wp-config.php file explicitly told us to write inside
+    # for additional custom values, which resulted in wp-content/object-cache.php error at line 1490: Connection refused
+    sed -n '91,$p' wp-config.php > tempfile
+    sed -i '91,$d' wp-config.php
+    if ! grep "redis_server" wp-config.php; then
+        echo '$redis_server'" = array(
+            'host'      => '$REDIS_IPADDR',
+            'port'      => 6379,
+            'auth'      => '$REDIS_AUTH',
+            'database'  => 0,
+        );" >> wp-config.php
+    fi
+    cat tempfile >> wp-config.php
+    rm tempfile
+fi
 
-wp plugin install wp-redis --activate
-cp wp-content/plugins/wp-redis/object-cache.php wp-content/object-cache.php
-#For printing out backtrace that led to php exception
-#sed -i 's/trigger_error( $this->last_triggered_error, E_USER_WARNING );/debug_print_backtrace();\n\t\t\ttrigger_error( $this->last_triggered_error, E_USER_WARNING );/g' wp-content/object-cache.php
+if test -f wp-content/object-cache.php; then
+    wp plugin activate wp-redis
+else
 
-# This line below will sometimes help solve the error when hyperlink to https://achak.42.fr/wp-admin/ doesn't work,
-# but entering it in search bar (regardless of line below) usually works
-# UPDATE: if the below script gets run after the first time, it changes https links to httpss, which will break the hyperlink to dashboard
-# Also, without this line now it works fine
-#wp search-replace http https --report-changed-only
+    wp plugin install wp-redis --activate
+    cp wp-content/plugins/wp-redis/object-cache.php wp-content/object-cache.php
+    #For printing out backtrace that led to php exception
+    #sed -i 's/trigger_error( $this->last_triggered_error, E_USER_WARNING );/debug_print_backtrace();\n\t\t\ttrigger_error( $this->last_triggered_error, E_USER_WARNING );/g' wp-content/object-cache.php
+fi
+
+if [ $is_first -eq 1 ]; then
+    # This line below will sometimes help solve the error when hyperlink to https://achak.42.fr/wp-admin/ doesn't work,
+    # but entering it in search bar (regardless of line below) usually works
+    # UPDATE: if the below script gets run after the first time, it changes https links to httpss, which will break the hyperlink to dashboard
+    wp search-replace http https --report-changed-only
+    echo "is_first condition hit"
+else
+    echo "condition not met"
+fi
 #wp cache flush
 cat << EOF > /var/www/html/abc.php
 <?php
