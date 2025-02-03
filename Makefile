@@ -13,7 +13,7 @@ clean:
 
 fclean:
 	$(DCOMPOSE) down --rmi all
-	rm -rf $(VOL_DIR)/mariadb $(VOL_DIR)/wordpress $(REQ_DIR)/nginx/logs/*
+	rm -rf $(VOL_DIR)/mariadb $(VOL_DIR)/wordpress
 
 enter:
 	-$(DCOMPOSE) exec -it $(c) $(SHELL)
