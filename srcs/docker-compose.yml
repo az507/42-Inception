@@ -5,7 +5,7 @@ services:
       - 443:443
     env_file: .env
     volumes:
-      - ${HOME}/data/wordpress:/var/www/html
+      - wp_vol:/var/www/html
     networks:
       - front-end
     depends_on:
@@ -16,20 +16,30 @@ services:
     restart: on-failure
 
   wordpress:
-    build: ./requirements/wordpress
+    build:
+      context: ./requirements/wordpress
+      args:
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        USER_NAME: ${USER_NAME}
+        USER_EMAIL: ${USER_EMAIL}
+        ADMIN_NAME: ${ADMIN_NAME}
+        ADMIN_EMAIL: ${ADMIN_EMAIL}
     env_file: .env
     volumes:
-      - ${HOME}/data/wordpress:/var/www/html
+      - wp_vol:/var/www/html
     networks:
       - front-end
       - back-end
     depends_on:
-      - mariadb
-      - redis
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_started
     secrets:
-      - wp_credentials
-      - wp_admin_credentials
-      - wpdb_credentials
+      - user_password
+      - admin_password
+      - db_password
       - redis_auth
     restart: on-failure
 
@@ -37,11 +47,19 @@ services:
     build: ./requirements/mariadb
     env_file: .env
     volumes:
-      - ${HOME}/data/mariadb:/var/lib/mysql
+      - db_vol:/var/lib/mysql
     networks:
       - back-end
     secrets:
-      - wpdb_credentials
+      - db_password
+      - db_root_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+      start_interval: 5s
     restart: on-failure
 
   redis:
@@ -58,14 +76,30 @@ secrets:
     file: ../secrets/ssl_cert.txt
   ssl_cert_key:
     file: ../secrets/ssl_cert_key.txt
-  wp_credentials:
-    file: ../secrets/wp_credentials.txt
-  wp_admin_credentials:
-    file: ../secrets/wp_admin_credentials.txt
-  wpdb_credentials:
-    file: ../secrets/wpdb_credentials.txt
   redis_auth:
     file: ../secrets/redis_auth.txt
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  admin_password:
+    file: ../secrets/admin_password.txt
+  user_password:
+    file: ../secrets/user_password.txt
+
+volumes:
+  wp_vol:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${HOME}/data/wordpress
+      o: bind
+  db_vol:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${HOME}/data/mariadb
+      o: bind
 
 networks:
   front-end:

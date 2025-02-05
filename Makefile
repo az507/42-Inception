@@ -13,7 +13,8 @@ clean:
 
 fclean:
 	$(DCOMPOSE) down --rmi all
-	rm -rf $(VOL_DIR)/mariadb $(VOL_DIR)/wordpress
+	-docker volume rm -f $(shell docker volume ls -q)
+	sudo rm -rf $(VOL_DIR)
 
 enter:
 	-$(DCOMPOSE) exec -it $(c) $(SHELL)

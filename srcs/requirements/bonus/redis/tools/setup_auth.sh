@@ -1,7 +1,7 @@
 #!/bin/bash
 
 REDIS_IPADDR=$(host redis | awk '{print $4}')
-REDIS_AUTH=$(grep "password" /run/secrets/redis_auth | awk '{print $2}')
+REDIS_AUTH=$(cat /run/secrets/redis_auth)
 
 while ! redis-cli -h $REDIS_IPADDR ping
 do
